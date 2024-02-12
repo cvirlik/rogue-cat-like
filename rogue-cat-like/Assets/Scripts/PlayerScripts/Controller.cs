@@ -1,16 +1,35 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Transform))]
+[RequireComponent(typeof(Transform)), RequireComponent(typeof(Rigidbody2D)), RequireComponent(typeof(SpriteRenderer))]
 public class Controller : MonoBehaviour
 {
     [SerializeField] Transform playerTransform;
+    private Vector3 originalPosition;
     [SerializeField] Rigidbody2D playerRigidbody;
+    [SerializeField] SpriteRenderer spriteRenderer;
     [SerializeField] float speed = 1f;
+    [SerializeField] float health = 100f;
+    [SerializeField] float maxHealth = 100f;
     private Vector2 input;
     private bool facingRight = false;
 
-     void Update()
+    public float Health
     {
+        get => health;
+    }
+
+    public float MaxHealth
+    {
+        get => maxHealth;
+    }
+
+    void Start(){
+        originalPosition = playerTransform.position;
+    }
+
+    void Update()
+    {
+        if(health == 0) Respawn();
         input.x = Input.GetAxisRaw("Horizontal");
         input.y = Input.GetAxisRaw("Vertical");
 
@@ -32,8 +51,28 @@ public class Controller : MonoBehaviour
     void Flip()
     {
         facingRight = !facingRight;
-        Vector3 scale = playerTransform.localScale;
-        scale.x *= -1;
-        playerTransform.localScale = scale;
+        spriteRenderer.flipX = !spriteRenderer.flipX;
+    }
+    public void TakeDamage(float amount)
+    {
+        health -= amount;
+        if (health < 0)
+        {
+            health = 0;
+        }
+    }
+
+    public void Heal(float amount)
+    {
+        health += amount;
+        if (health > maxHealth)
+        {
+            health = maxHealth;
+        }
+    }
+
+    private void Respawn(){
+        transform.position = originalPosition;
+        health = maxHealth;
     }
 }
